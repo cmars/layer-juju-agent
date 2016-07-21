@@ -1,0 +1,5 @@
+options:
+  juju-api-nonce:
+    type: string
+    description: |
+        API access nonce granted to the charm.

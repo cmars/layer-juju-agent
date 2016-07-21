@@ -1,0 +1,5 @@
+includes:
+  - layer:basic
+ignore:
+  - 'plugins'
+  - '.*.swp'
