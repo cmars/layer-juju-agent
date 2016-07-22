@@ -9,7 +9,7 @@ fi
 STATUS=$(juju status --format json)
 MODEL=$(echo ${STATUS} | jq -r '.model.name')
 CONTROLLER=$(echo ${STATUS} | jq -r '.model.controller')
-NONCE=$(juju add-user --models ${MODEL} --controller ${CONTROLLER} agent-${SERVICE} | grep register | awk '{print $3}')
+NONCE=$(juju add-user --models ${MODEL} --controller ${CONTROLLER} agent-${APP} | grep register | awk '{print $3}')
 
 juju set-config ${APP} juju-api-nonce=${NONCE}
 

@@ -1,6 +1,8 @@
 import os
+import random
+import string
 import subprocess
-from subprocess import check_call
+from subprocess import check_call, Popen, PIPE
 
 from charms.reactive import when, when_not, set_state
 from charmhelpers.core import hookenv
@@ -18,18 +20,19 @@ def install_juju_client():
 @when('config.changed')
 def config_changed():
     config = hookenv.config()
-    if config.changed('juju-api-nonce'):
-        register(config.get('juju-api-nonce'))
+    if config.changed('juju-api-nonce') and config.get('juju-api-nonce'):
+        register(config['juju-api-nonce'])
         set_state('juju-agent.registered')
 
 
-@when_not('juju-agent.registered'):
+@when_not('juju-agent.registered')
 def not_registered():
     hookenv.status_set('blocked', 'authenticate with "juju auth-agent %s"' % (hookenv.service_name()))
 
 
 def new_password():
-    return ''.join([random.choice(string.printable) for _ in range(20)])
+    r = random.SystemRandom()
+    return ''.join([r.choice(string.printable) for _ in range(20)])
 
 
 def register(nonce):
@@ -39,9 +42,8 @@ def register(nonce):
     env.update(os.environ)
     env['HOME'] = hookenv.charm_dir()
     with Popen(['juju', 'register', nonce], universal_newlines=True, stdin=PIPE) as p:
-        p.communicate(input="""
-%(name)s
+        p.communicate(input="""%(name)s
 %(password)s
 %(password)s
-""" % {name: agent_name, password: agent_password})
+""" % {'name': agent_name, 'password': agent_password})
     hookenv.status_set('active', 'agent %s authenticated' % (hookenv.service_name()))
